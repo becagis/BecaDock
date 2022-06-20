@@ -4,6 +4,7 @@ services:
 
 ### Workspace Utilities ##################################
   workspace:
+    image: becagis/becadock_workspace:8.1
     build:
       context: ./workspace
       args:
@@ -14,10 +15,14 @@ services:
 
 ### PHP-FPM ##############################################
   php-fpm:
+    image: becagis/becadock_nginx:8.1
     build:
       context: ./php-fpm
       args:
         - DOCKER_VERSION=${PHP_FPM_DOCKER_VERSION}
         - DOCKER_COMPOSE_VERSION=${PHP_FPM_DOCKER_COMPOSE_VERSION}
 
+### Portainer ################################################
+  portainer:
+    image: becagis/becadock_portainer
 
