@@ -987,12 +987,24 @@ RUN if [ ${INSTALL_SSHPASS} = true ]; then \
 USER root
 
 ARG INSTALL_DOCKER_CLIENT=false
+ARG INSTALL_DOCKER_COMPOSE=true
+ARG DOCKER_VERSION=20.10.3
+ARG DOCKER_COMPOSE_VERSION=2.6.0
 
 RUN if [ ${INSTALL_DOCKER_CLIENT} = true ]; then \
-    curl -sS https://download.docker.com/linux/static/stable/x86_64/docker-20.10.3.tgz -o /tmp/docker.tar.gz && \
+    curl -sS https://download.docker.com/linux/static/stable/x86_64/docker-${DOCKER_VERSION}.tgz -o /tmp/docker.tar.gz && \
     tar -xzf /tmp/docker.tar.gz -C /tmp/ && \
     cp /tmp/docker/docker* /usr/local/bin && \
-    chmod +x /usr/local/bin/docker* \
+    chmod +x /usr/local/bin/docker* && \
+    ###########################################################################
+    # Docker Compose:
+    ########################################################################### \
+    # @becagis
+    if [ ${INSTALL_DOCKER_COMPOSE} = true ]; then \
+      mkdir -p ~/.docker/cli-plugins/; \
+      curl -SL https://github.com/docker/compose/releases/download/v${DOCKER_COMPOSE_VERSION}/docker-compose-linux-x86_64 -o ~/.docker/cli-plugins/docker-compose; \
+      chmod +x ~/.docker/cli-plugins/docker-compose; \
+    fi \
 ;fi
 
 ###########################################################################

@@ -42,6 +42,10 @@ alias ~="cd ~" # `cd` is probably faster to type though
 alias -- -="cd -"
 alias home="cd ~"
 
+alias vntts="cd ~/VNTTS"
+alias dock="cd ~/VNTTS/BecaDock"
+alias nginx="cd ~/VNTTS/BecaDock/nginx/sites"
+
 alias h="history"
 alias j="jobs"
 alias e='exit'

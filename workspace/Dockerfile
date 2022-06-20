@@ -1165,7 +1165,10 @@ RUN if [ ${INSTALL_PYTHON} = true ]; then \
 ARG INSTALL_PYTHON3=false
 
 RUN if [ ${INSTALL_PYTHON3} = true ]; then \
-  apt-get -y install python3 python3-dev build-essential  \
+  # @becagis
+  add-apt-repository -y ppa:ondrej/pkg-gearman && \
+  apt-get update -yqq && \
+  apt-get -y install python3 python3-dev python3-venv build-essential  \
   && curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py  \
   && python3 get-pip.py  \
   && rm get-pip.py  \
@@ -1181,10 +1184,11 @@ USER root
 ARG INSTALL_POWERLINE=false
 
 RUN if [ ${INSTALL_POWERLINE} = true ]; then \
-    if [ ${INSTALL_PYTHON} = true ]; then \
-    python -m pip install --upgrade powerline-status && \
+    # @becagis
+    if [ ${INSTALL_PYTHON3} = true ]; then \
+    python3 -m pip install --upgrade powerline-status && \
     echo "" >> /etc/bash.bashrc && \
-    echo ". /usr/local/lib/python2.7/dist-packages/powerline/bindings/bash/powerline.sh" >> /etc/bash.bashrc \
+    echo ". /usr/local/lib/python3.8/dist-packages/powerline/bindings/bash/powerline.sh" >> /etc/bash.bashrc \
   ;fi \
 ;fi
 
@@ -1342,6 +1346,9 @@ ARG INSTALL_MYSQL_CLIENT=false
 ARG INSTALL_PING=false
 ARG INSTALL_SSHPASS=false
 ARG INSTALL_DOCKER_CLIENT=false
+ARG INSTALL_DOCKER_COMPOSE=true
+ARG DOCKER_VERSION=20.10.3
+ARG DOCKER_COMPOSE_VERSION=2.6.0
 
 RUN set -eux; \
   ###########################################################################
@@ -1366,10 +1373,19 @@ RUN set -eux; \
   # Docker Client:
   ###########################################################################
   if [ ${INSTALL_DOCKER_CLIENT} = true ]; then \
-    curl -sS https://download.docker.com/linux/static/stable/x86_64/docker-20.10.3.tgz -o /tmp/docker.tar.gz; \
+    curl -sS https://download.docker.com/linux/static/stable/x86_64/docker-${DOCKER_VERSION}.tgz -o /tmp/docker.tar.gz; \
     tar -xzf /tmp/docker.tar.gz -C /tmp/; \
     cp /tmp/docker/docker* /usr/local/bin; \
     chmod +x /usr/local/bin/docker*; \
+    ###########################################################################
+    # Docker Compose:
+    ########################################################################### \
+    # @becagis
+    if [ ${INSTALL_DOCKER_COMPOSE} = true ]; then \
+      mkdir -p ~/.docker/cli-plugins/; \
+      curl -SL https://github.com/docker/compose/releases/download/v${DOCKER_COMPOSE_VERSION}/docker-compose-linux-x86_64 -o ~/.docker/cli-plugins/docker-compose; \
+      chmod +x ~/.docker/cli-plugins/docker-compose; \
+    fi; \
   fi
 
 ###########################################################################
@@ -1556,6 +1572,8 @@ RUN if [ ${SHELL_OH_MY_ZSH} = true ]; then \
 
 ARG SHELL_OH_MY_ZSH_AUTOSUGESTIONS=false
 ARG SHELL_OH_MY_ZSH_ALIASES=false
+# @becagis
+ARG SHELL_OH_MY_ZSH_SYNTAX_HIGHLIGHTING=false
 
 USER laradock
 RUN if [ ${SHELL_OH_MY_ZSH} = true ]; then \
@@ -1586,7 +1604,17 @@ bindkey "^?" backward-delete-char\n' >> /home/laradock/.zshrc && \
     echo "# Load Custom Aliases" >> /home/laradock/.zshrc && \
     echo "source /home/laradock/aliases.sh" >> /home/laradock/.zshrc && \
     echo "" >> /home/laradock/.zshrc \
-  ;fi \
+  ;fi && \
+  # @becagis
+  if [ ${SHELL_OH_MY_ZSH_SYNTAX_HIGHLIGHTING} = true ]; then \
+    sh -c "git clone https://github.com/zsh-users/zsh-syntax-highlighting.git ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/zsh-syntax-highlighting" && \
+    sed -i 's~plugins=(~plugins=(zsh-syntax-highlighting ~g' /home/laradock/.zshrc \
+  ;fi && \
+  # Powerlevel10k \
+  sh -c "git clone --depth=1 https://github.com/romkatv/powerlevel10k.git ${ZSH_CUSTOM:-$HOME/.oh-my-zsh/custom}/themes/powerlevel10k" && \
+  echo "" >> /home/laradock/.zshrc && \
+  echo "source ${ZSH_CUSTOM:-$HOME/.oh-my-zsh/custom}/themes/powerlevel10k/powerlevel10k.zsh-theme" >> /home/laradock/.zshrc && \
+  echo "POWERLEVEL9K_DISABLE_CONFIGURATION_WIZARD=true" >> /home/laradock/.zshrc \
 ;fi
 
 USER root
@@ -1731,6 +1759,27 @@ RUN if [ ${INSTALL_ZMQ} = true ]; then \
     && rm -fr php-zmq \
     && echo "extension=zmq.so" >> /etc/php/${LARADOCK_PHP_VERSION}/mods-available/zmq.ini \
     && ln -s /etc/php/${LARADOCK_PHP_VERSION}/mods-available/zmq.ini /etc/php/${LARADOCK_PHP_VERSION}/cli/conf.d/20-zmq.ini \
+;fi
+
+#
+#--------------------------------------------------------------------------
+# @becagis
+#--------------------------------------------------------------------------
+#
+
+USER root
+
+ARG INSTALL_MICRO=true
+
+RUN apt-get install -yqq net-tools telnet
+
+RUN if [ ${INSTALL_MICRO} = true ]; then \
+    curl https://getmic.ro | bash \
+    && mv micro /usr/bin \
+;fi
+
+RUN if [ ${INSTALL_PYTHON3} = true ]; then \
+  pip install Django \
 ;fi
 
 #

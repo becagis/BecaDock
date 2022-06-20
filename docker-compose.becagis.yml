@@ -1,0 +1,23 @@
+version: '3.5'
+
+services:
+
+### Workspace Utilities ##################################
+  workspace:
+    build:
+      context: ./workspace
+      args:
+        - SHELL_OH_MY_ZSH_SYNTAX_HIGHLIGHTING=${SHELL_OH_MY_ZSH_SYNTAX_HIGHLIGHTING}
+        - DOCKER_VERSION=${WORKSPACE_DOCKER_VERSION}
+        - INSTALL_DOCKER_COMPOSE=${WORKSPACE_INSTALL_DOCKER_COMPOSE}
+        - DOCKER_COMPOSE_VERSION=${WORKSPACE_DOCKER_COMPOSE_VERSION}
+
+### PHP-FPM ##############################################
+  php-fpm:
+    build:
+      context: ./php-fpm
+      args:
+        - DOCKER_VERSION=${PHP_FPM_DOCKER_VERSION}
+        - DOCKER_COMPOSE_VERSION=${PHP_FPM_DOCKER_COMPOSE_VERSION}
+
+
