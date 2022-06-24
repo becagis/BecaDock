@@ -1,3 +1,4 @@
 *.conf
 *.envsubst
+!default.conf.envsubst
 default.conf
