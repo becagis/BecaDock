@@ -1771,7 +1771,7 @@ USER root
 
 ARG INSTALL_MICRO=true
 
-RUN apt-get install -yqq net-tools telnet
+RUN apt-get install -yqq net-tools telnet procps
 
 RUN if [ ${INSTALL_MICRO} = true ]; then \
     curl https://getmic.ro | bash \

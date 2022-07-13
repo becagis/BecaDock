@@ -12,6 +12,17 @@ services:
         - DOCKER_VERSION=${WORKSPACE_DOCKER_VERSION}
         - INSTALL_DOCKER_COMPOSE=${WORKSPACE_INSTALL_DOCKER_COMPOSE}
         - DOCKER_COMPOSE_VERSION=${WORKSPACE_DOCKER_COMPOSE_VERSION}
+    restart: unless-stopped
+    working_dir: /var/www/PROJECT
+
+### Docker-in-Docker ################################################
+  docker-in-docker:
+    restart: unless-stopped
+
+### Portainer ################################################
+  portainer:
+    image: becagis/becadock_portainer
+    restart: unless-stopped
 
 ### PHP-FPM ##############################################
   php-fpm:
@@ -21,12 +32,38 @@ services:
       args:
         - DOCKER_VERSION=${PHP_FPM_DOCKER_VERSION}
         - DOCKER_COMPOSE_VERSION=${PHP_FPM_DOCKER_COMPOSE_VERSION}
+    restart: unless-stopped
+
+### PHP Worker ############################################
+  php-worker:
+    image: becagis/becadock_php_worker:8.1
+    restart: unless-stopped
+
+### Laravel Echo Server #######################################
+  laravel-echo-server:
+    image: becagis/becadock_laravel_echo_server
+    restart: unless-stopped
+
+### Mailhog ################################################
+  mailhog:
+    image: becagis/becadock_mailhog
 
 ### NGINX Server #########################################
   nginx:
     image: becagis/becadock_nginx
 
-### Portainer ################################################
-  portainer:
-    image: becagis/becadock_portainer
+  nginx-php:
+    image: becagis/becadock_nginx:php
+    build:
+      context: ./nginx
+      args:
+        - CHANGE_SOURCE=${CHANGE_SOURCE}
+        - PHP_UPSTREAM_CONTAINER=${NGINX_PHP_UPSTREAM_CONTAINER}
+        - PHP_UPSTREAM_PORT=${NGINX_PHP_UPSTREAM_PORT}
+        - http_proxy
+        - https_proxy
+        - no_proxy
+
+
+
 
